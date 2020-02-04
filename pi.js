@@ -28,10 +28,8 @@ var next_val = function(current, final, duration) {
     if (current == final) {
         return final;
     }
-    // var step = (final - current) / (duration * 60);
     var step = (final - current) / (duration * 5);
     return current + step;
-    // return Math.abs(step) > 0.001 ? (current + step) : final;
 };
 
 var pie_slice = function(v_f,r,t,o) {
@@ -102,12 +100,12 @@ var drawUnitCircle = function() {
     scene.push(unit_circle);
 }
 
-var slices = Array(8);
+var slices = Array(16);
 var drawCloseSlices = function() {
     unit_circle.hidden = true;
     theta = 2 * Math.PI / slices.length;
     for (i = 0; i < slices.length; i++) {
-        v_0 = vector2d(0, theta * i);
+        v_0 = vector2d(0, theta * i - theta / 2);
         slices[i] = pie_slice(v_0, one, theta, 0);
     }
     scene = scene.concat(slices);
@@ -182,27 +180,146 @@ var moveSlices = function() {
     }
 }
 
+var setText = function(id, text, style, px) {
+    e = document.getElementById(id);
+    if (text != null) {
+        e.innerHTML = text;
+    }
+    if (px != null) {
+        e.style = style + ": " + px + "px";
+    }
+}
+
+var setTop = function(text, bottom) {
+    setText("top", text, "bottom", bottom);
+}
+
+var setCenter = function(text, bottom) {
+    setText("center", text, "bottom", bottom);
+}
+
+var setBottom = function(text, bottom) {
+    setText("bottom", text, "bottom", bottom);
+}
+
+var setBottomLeft = function(text, bottom) {
+    setText("bottomleft", text, "bottom", bottom);
+}
+
+var proof = "";
 var step = 0;
 var steps = [
     drawUnitCircle,
-    drawCloseSlices,
-    explodeSlices,
+    function() {
+        setText("bottom", "c = circumference of the circle", "top", 3 * one);
+    },
+    function() {
+        scene.push(
+            {
+                render: function() {
+                    ctx.beginPath();
+                    ctx.moveTo(-one, 0);
+                    ctx.lineTo(one, 0);
+                    ctx.stroke();
+                }
+            }
+        );
+    },
+    function() {
+        setCenter("d = diameter of the circle");
+    },
+    function() {
+        setTop("π ≝ c / d", 3*one);        
+    },
+    function() {
+        scene.pop();
+        scene.push(
+            {
+                render: function() {
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(-one * Math.cos(Math.PI/4*3), -one * Math.sin(Math.PI/4*3));
+                    ctx.stroke();
+                }
+            }
+        )
+        setCenter("r = radius, or d / 2");
+    },
+    function() {
+        scene.pop();
+        setTop("");
+        setCenter("A = π·r²");
+        setBottom("");
+    },
+    function () {
+        setCenter("");
+        drawCloseSlices();
+        explodeSlices();
+    },
     implodeSlices,
-    moveSlices
-]
+    moveSlices,
+    function() {
+        scene = [];
+        slices = Array(slices.length * 4);
+        drawCloseSlices();
+        explodeSlices();
+    },
+    moveSlices,
+    function() {
+        scene = [];
+        slices = Array(slices.length * 8);
+        drawCloseSlices();
+        explodeSlices();
+    },
+    moveSlices,
+    function() {
+        setTop("w = c / 2", 2.5 * one);
+    },
+    function() {
+        setText("left", "h = r", "top", 425);
+    }
+];
+
+proof = [
+    "A = w·h",
+    "&nbsp;&nbsp;= (c/2)·(r)",
+    "A = c·r/2",
+    "π = c/d",
+    "c = π·d",
+    "&nbsp;&nbsp;= π(2·r)",
+    "c = 2·π·r",
+    "A = c·r/2",
+    "&nbsp;&nbsp;= (2·π·r)·r/2",
+    "&nbsp;&nbsp;= π·r·r",
+    "A =  π·r²"
+];
+
+proof_steps = proof.map(
+    function(step) {
+        return function() {
+            e = document.getElementById("bottomleft");
+            e.innerHTML = e.innerHTML + "<br/>" + step;
+        }
+    }
+);
+
+steps = steps.concat(proof_steps);
+
+steps.push(
+    function() {
+        setTop("");
+        setText("left", "", "top", 425);
+        setBottomLeft("")
+        scene = [];
+        unit_circle.hidden = false;
+        scene.push(unit_circle);
+        setCenter("A = π·r²");
+    }
+);
 
 var next = function() {
     if (step < steps.length) {
         nextStep = steps[step++];
         nextStep();
-    } else {
-        pause = true;
-        window.setTimeout(function() {
-            scene = [];
-            slices = Array(slices.length * 2);
-            step = 1;
-            pause = false;
-            window.requestAnimationFrame(render_scene);
-        }, 10);
     }
 }

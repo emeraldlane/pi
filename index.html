@@ -5,11 +5,43 @@
         <title>Pi Demo</title>
         <script src="pi.js"></script>
         <style type="text/css">
-            canvas { border: 1px solid black; }
+            canvas { 
+                border: 1px solid white;
+            }
+            .content {
+                max-width: 1000px;
+                margin: auto;
+            }
+            h1 {
+                text-align: center;
+            }
+            .container {
+                position: relative;
+            }
+            .overlay {
+                font-family: 'Courier New', Courier, monospace;
+                position: absolute;
+                left: 0;
+                width: 100%;
+                text-align: center;
+            }
+            .overlay.left {
+                text-align: left;
+            }
         </style>
     </head>
     <body onload="start_pi()">
-        <canvas id="canvas" width="1000" height="1000"></canvas>
-        <button id="next" onclick="next()">next</button>
+        <div class="content">
+            <h1>Exploring π and the Area of a Circle</h1>
+            <div class="container">
+                <canvas id="canvas" width="1000" height="1000" onclick="next()"></canvas>
+                <h2 id="top" class="overlay" style="top: 0px"></h2>
+                <h2 id="center" class="overlay" style="bottom: 500px"></h2>
+                <h2 id="bottom" class="overlay" style="bottom: 0px"></h2>
+                <h2 id="left" class="overlay left" style="bottom: 425px"></h2>
+                <h2 id="bottomleft" class="overlay left" style="top: 600px; left: 450px;"></h2>
+            </div>
+            <a href="https://github.com/emeraldlane/pi">github</a>
+        </div>
     </body>
 </html>
